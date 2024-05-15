@@ -242,8 +242,8 @@ if __name__ == "__main__":
     stats_generator = statsGenerator(base_url)
 
     stats_generator.get_pulls()
-    stats_generator.output_results()
     stats_generator.get_commits()
     stats_generator.get_files()
+    stats_generator.output_results()
 
     print("Rate limit remaining:", stats_generator.rate_limit_remaining)
