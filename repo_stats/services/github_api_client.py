@@ -28,18 +28,22 @@ class GitHubAPIClient:
                              "  - Set the GITHUB_TOKEN environment variable\n")
 
         self.headers = {"Authorization": f"token {self.gh_token}"}
-    
+
+    def _set_rate_limit(self, rate_limit: int) -> None:
+        """Update the current rate limit remaining from a response object."""
+        self.rate_limit_remaining = rate_limit
+        if rate_limit <= 200:
+            self._rate_limit_refresh_interval = 1
+        else:
+            self._rate_limit_refresh_interval = self._rate_limit_refresh_interval_default
+
+        self.rate_limit_refresh = time.time() + self._rate_limit_refresh_interval
+
     def get_rate_limit_remaining(self) -> int:
         """Get the rate limit remaining for the GitHub API."""
         if time.time() > self.rate_limit_refresh:
             response = requests.get("https://api.github.com/rate_limit", headers=self.headers)
-            self.rate_limit_remaining = response.json()["resources"]["core"]["remaining"]
-            self.rate_limit_refresh = time.time() + self._rate_limit_refresh_interval
-
-        if self.rate_limit_remaining <= 200:
-            self._rate_limit_refresh_interval = 1
-        else:
-            self._rate_limit_refresh_interval = self._rate_limit_refresh_interval_default
+            self._set_rate_limit(response.json()["resources"]["core"]["remaining"])
 
         return self.rate_limit_remaining
     
@@ -52,3 +56,9 @@ class GitHubAPIClient:
         """Get the time at which the rate limit will reset."""
         response = requests.get("https://api.github.com/rate_limit", headers=self.headers)
         return datetime.fromtimestamp(response.json()["resources"]["core"]["reset"])
+    
+    def make_request(self, link: str) -> requests.Response:
+        """Make a request to a given link and return the response code, response object and data."""
+        response = requests.get(link, headers=self.headers)
+        self._set_rate_limit(int(dict(response.headers)["X-RateLimit-Remaining"]))
+        return response
