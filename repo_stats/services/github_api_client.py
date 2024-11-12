@@ -4,6 +4,7 @@ import time
 from dotenv import load_dotenv
 from pathlib import Path
 from datetime import datetime
+from repo_stats.utils.input_output import InputOutputHandler, PrintWrapper
 
 class GitHubAPIClient:
     """A client for the GitHub API."""
@@ -57,8 +58,18 @@ class GitHubAPIClient:
         response = requests.get("https://api.github.com/rate_limit", headers=self.headers)
         return datetime.fromtimestamp(response.json()["resources"]["core"]["reset"])
     
-    def make_request(self, link: str) -> requests.Response:
+    def make_request(self, link: str, 
+                     err_ouput_handler: InputOutputHandler = PrintWrapper()
+                    ) -> requests.Response:
         """Make a request to a given link and return the response code, response object and data."""
+        if self.get_rate_limit_remaining() <= 100:
+            reset_time = self.get_rate_limit_reset_time()
+            err_ouput_handler.output("Rate Limit Reached",
+                                    f"Waiting {(reset_time - datetime.now()).total_seconds()}", 
+                                     "for rate limit reset", "error")
+            time.sleep((reset_time - datetime.now()).total_seconds())
+            return self.make_request(link, err_ouput_handler)
+
         response = requests.get(link, headers=self.headers)
         self._set_rate_limit(int(dict(response.headers)["X-RateLimit-Remaining"]))
         return response

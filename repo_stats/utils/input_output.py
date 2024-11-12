@@ -14,9 +14,6 @@ class InputOutputHandler:
 
 class DummyOutputter:
     """Dummy outputter that does nothing."""
-    def __init__(self):
-        pass
-
     def output(self, title: str, message: str, message_type: str) -> None:
         pass
 
@@ -26,9 +23,6 @@ class DummyOutputter:
 
 class Outputter(DummyOutputter):
     """Output messages."""
-    def __init__(self):
-        pass
-
     def output(self, title: str, message: str, message_type: str) -> None:
         """Output a formatted message with color based on message type.
         Message type should be out of ['success', 'progress', 'error']"""
@@ -50,3 +44,9 @@ class Outputter(DummyOutputter):
     
     def error(self, title: str, message: str) -> None:
         self.output(title, message, "error")
+
+
+class PrintWrapper:
+    """Print wrapper."""
+    def output(self, title: str, message: str, message_type: str) -> None:
+        print(message_type, title, message)

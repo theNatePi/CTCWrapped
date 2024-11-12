@@ -29,20 +29,11 @@ class StatsGenerator:
         """Make a request to a given link and return the response code, response object and data."""
         self.io_handler.output("Making request", link, "progress")
 
-        if self.api_client.get_rate_limit_remaining() <= 100:
-            reset_time = self.api_client.get_rate_limit_reset_time()
-            self.io_handler.output("Rate Limit Reached",
-                                  f"Waiting {(reset_time - datetime.now()).total_seconds()}", 
-                                   "for rate limit reset", "error")
-            time.sleep((reset_time - datetime.now()).total_seconds())
-            return self._make_request(link)
-
-        response = requests.get(link, headers = self.headers)
+        response = self.api_client.make_request(link, self.io_handler)
 
         if response.status_code == 200:
             # Parse the JSON response and print it
             data = response.json()
-            self._set_rate_limit(response)
             return RequestResult(response.status_code, response, data)
         else:
             self.io_handler.error("Request Failed",
