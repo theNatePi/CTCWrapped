@@ -30,6 +30,8 @@ class GitHubAPIClient:
 
         self.headers = {"Authorization": f"token {self.gh_token}"}
 
+        self.request_type = "NULL"
+
     def _set_rate_limit(self, rate_limit: int) -> None:
         """Update the current rate limit remaining from a response object."""
         self.rate_limit_remaining = rate_limit

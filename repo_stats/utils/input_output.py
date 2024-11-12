@@ -1,5 +1,5 @@
 from termcolor import colored
-
+from repo_stats.services.github_api_client import GitHubApiClient
 class InputOutputHandler:
     """Handle input and output."""
     def __init__(self, verbose: bool = False):
@@ -14,6 +14,9 @@ class InputOutputHandler:
 
 class DummyOutputter:
     """Dummy outputter that does nothing."""
+    def __init__(self, api_client: GitHubApiClient):
+        self.api_client = api_client
+
     def output(self, title: str, message: str, message_type: str) -> None:
         pass
 
@@ -37,8 +40,8 @@ class Outputter(DummyOutputter):
         open_bracket = colored('[', attrs = ['dark'])
         close_bracket = colored(']', attrs = ['dark'])
         print(f"{open_bracket}"
-              f"{colored(self._current_request_type, 'light_green')}{close_bracket} "
-              f"{open_bracket}{colored(self.rate_limit_remaining, 'light_magenta', attrs = ['dark'])}"
+              f"{colored(self.api_client.request_type, 'light_green')}{close_bracket} "
+              f"{open_bracket}{colored(self.api_client.rate_limit_remaining, 'light_magenta', attrs = ['dark'])}"
               f"{close_bracket} {colored(title, color)}: "
               f"{colored(message, attrs = ['dark'])}")
     
@@ -46,7 +49,7 @@ class Outputter(DummyOutputter):
         self.output(title, message, "error")
 
 
-class PrintWrapper:
+class PrintWrapper: # TODO: should this be a DummyOutputter?
     """Print wrapper."""
     def output(self, title: str, message: str, message_type: str) -> None:
         print(message_type, title, message)
