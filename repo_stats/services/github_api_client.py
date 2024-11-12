@@ -4,7 +4,7 @@ from pathlib import Path
 import requests
 from datetime import datetime
 
-class GithubAPIClient:
+class GitHubAPIClient:
     """A client for the GitHub API."""
     def __init__(self, base_url: str, *, 
                  token: str | None = None, 
