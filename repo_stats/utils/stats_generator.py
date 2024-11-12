@@ -3,9 +3,9 @@ from datetime import datetime
 import requests
 import base64
 import time
-from repo_stats.services.github_api_client import GitHubAPIClient
-from repo_stats.utils.stats import RepoStats
-from repo_stats.utils.input_output import InputOutputHandler
+from services.github_api_client import GitHubAPIClient
+from utils.stats import RepoStats
+from utils.input_output import InputOutputHandler
 
 
 RequestResult = namedtuple("RequestResult", ["status_code", "response", "data"])
@@ -22,6 +22,7 @@ class StatsGenerator:
         )
         self.stats = stats or RepoStats()
         self.io_handler = input_output_handler or InputOutputHandler(
+            api_client=self.api_client,
             verbose=verbose
         )
         self.verbose = verbose
@@ -196,3 +197,10 @@ class StatsGenerator:
         self.io_handler.output("Contents retrieved, lines of code retrieved",
                               f"{self.api_client.request_counter} requests made",
                                "success")
+    
+    def generate_all_stats(self):
+        """Generate all statistics for the repository."""
+        self.get_pulls()
+        self.get_commits()
+        self.get_files()
+        self.stats.output_results()

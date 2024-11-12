@@ -4,7 +4,7 @@ import time
 from dotenv import load_dotenv
 from pathlib import Path
 from datetime import datetime
-from repo_stats.utils.input_output import InputOutputHandler, PrintWrapper
+from utils.input_output import InputOutputHandler, PrintWrapper
 
 class GitHubAPIClient:
     """A client for the GitHub API."""
@@ -15,13 +15,13 @@ class GitHubAPIClient:
         self._rate_limit_refresh_interval = self._rate_limit_refresh_interval_default
 
         self.base_url = base_url
-        self.token = token
-        self.rate_limit_refresh = time.time()
-        self.rate_limit_remaining = self.get_rate_limit_remaining()
-
+        self.gh_token = token
+        
+        """
         if self.gh_token is None:
             load_dotenv(Path(env_path or ".env"))
             self.gh_token = os.getenv("GITHUB_TOKEN")
+
         
         if self.gh_token is None:
             raise ValueError("No GitHub token provided\n"
@@ -29,7 +29,11 @@ class GitHubAPIClient:
                              "  - Set the GITHUB_TOKEN environment variable\n")
 
         self.headers = {"Authorization": f"token {self.gh_token}"}
+        """
+        self.headers = {}
 
+        self.rate_limit_refresh = time.time()
+        self.rate_limit_remaining = self.get_rate_limit_remaining()
         self.request_type = "NULL"
 
     def _set_rate_limit(self, rate_limit: int) -> None:
@@ -67,8 +71,8 @@ class GitHubAPIClient:
         if self.get_rate_limit_remaining() <= 100:
             reset_time = self.get_rate_limit_reset_time()
             err_ouput_handler.output("Rate Limit Reached",
-                                    f"Waiting {(reset_time - datetime.now()).total_seconds()}", 
-                                     "for rate limit reset", "error")
+                                    f"Waiting {(reset_time - datetime.now()).total_seconds()} for rate limit reset", 
+                                     "error")
             time.sleep((reset_time - datetime.now()).total_seconds())
             return self.make_request(link, err_ouput_handler)
 

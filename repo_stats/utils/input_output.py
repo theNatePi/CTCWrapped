@@ -1,12 +1,12 @@
 from termcolor import colored
-from repo_stats.services.github_api_client import GitHubApiClient
+
 class InputOutputHandler:
     """Handle input and output."""
-    def __init__(self, verbose: bool = False):
+    def __init__(self, api_client, verbose: bool = False):
         if verbose:
-            self.outputter = Outputter()
+            self.outputter = Outputter(api_client)
         else:
-            self.outputter = DummyOutputter()
+            self.outputter = DummyOutputter(api_client)
         
     def output(self, title: str, message: str, message_type: str) -> None:
         self.outputter.output(title, message, message_type)
@@ -14,7 +14,7 @@ class InputOutputHandler:
 
 class DummyOutputter:
     """Dummy outputter that does nothing."""
-    def __init__(self, api_client: GitHubApiClient):
+    def __init__(self, api_client):
         self.api_client = api_client
 
     def output(self, title: str, message: str, message_type: str) -> None:
