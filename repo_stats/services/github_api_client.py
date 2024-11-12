@@ -1,7 +1,8 @@
 import os
+import requests
+import time
 from dotenv import load_dotenv
 from pathlib import Path
-import requests
 from datetime import datetime
 
 class GitHubAPIClient:
@@ -9,8 +10,13 @@ class GitHubAPIClient:
     def __init__(self, base_url: str, *, 
                  token: str | None = None, 
                  env_path: str | None = None):
+        self._rate_limit_refresh_interval_default = 20
+        self._rate_limit_refresh_interval = self._rate_limit_refresh_interval_default
+
         self.base_url = base_url
         self.token = token
+        self.rate_limit_refresh = time.time()
+        self.rate_limit_remaining = self.get_rate_limit_remaining()
 
         if self.gh_token is None:
             load_dotenv(Path(env_path or ".env"))
@@ -25,8 +31,17 @@ class GitHubAPIClient:
     
     def get_rate_limit_remaining(self) -> int:
         """Get the rate limit remaining for the GitHub API."""
-        response = requests.get("https://api.github.com/rate_limit", headers=self.headers)
-        return response.json()["resources"]["core"]["remaining"]
+        if time.time() > self.rate_limit_refresh:
+            response = requests.get("https://api.github.com/rate_limit", headers=self.headers)
+            self.rate_limit_remaining = response.json()["resources"]["core"]["remaining"]
+            self.rate_limit_refresh = time.time() + self._rate_limit_refresh_interval
+
+        if self.rate_limit_remaining <= 200:
+            self._rate_limit_refresh_interval = 1
+        else:
+            self._rate_limit_refresh_interval = self._rate_limit_refresh_interval_default
+
+        return self.rate_limit_remaining
     
     def get_rate_limit_used(self) -> int:
         """Get the rate limit used for the GitHub API."""
