@@ -5,7 +5,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         prog="repo_stats",
         description="Generate stats for a GitHub repository",
-        epilog="Example: repo_stats user/repo"
+        epilog="Example: main.py -u <USER> -r <REPO>"
     )
     parser.add_argument("-u", "--user", nargs=1, help="The GitHub username of the repository owner")
     parser.add_argument("-r", "--repo", nargs=1, help="The name of the repository")
