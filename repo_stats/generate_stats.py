@@ -6,7 +6,11 @@ from pathlib import Path
 from termcolor import colored
 
 class statsGenerator:
+    """Generates statistics for a GitHub repository."""
     def __init__(self, base_url: str) -> None:
+        # Load github token from .env file
+        #   - Create a .env file in the same directory as this file
+        #   - Include "GITHUB_TOKEN" = "your_token_here"
         load_dotenv(Path(".env"))
         self.gh_token = os.getenv("GITHUB_TOKEN")
         self.headers = {"Authorization": f"token {self.gh_token}"}
@@ -28,6 +32,8 @@ class statsGenerator:
         self.total_lines_of_code = 0
 
     def _output_message(self, title: str, message: str, message_type: str) -> None:
+        """Output a formatted message with color based on message type.
+        Message type should be out of ['success', 'progress', 'error']"""
         color = 'white'
         if message_type == "success":
             color = 'green'
@@ -45,9 +51,11 @@ class statsGenerator:
               f"{colored(message, attrs = ['dark'])}")
 
     def _set_rate_limit(self, response: requests.Response) -> None:
+        """Update the current rate limit remaining from a response object."""
         self.rate_limit_remaining = int(dict(response.headers)["X-RateLimit-Remaining"])
 
     def _make_request(self, link):
+        """Make a request to a given link and return the response code, response object and data."""
         self._output_message("Making request", link, "progress")
         self._request_counter += 1
 
@@ -71,6 +79,7 @@ class statsGenerator:
             return response.status_code, response, {}
 
     def _get_all_events(self, link) -> list:
+        """Get all events from a link where there may be multiple pages."""
         events = []
         response_code, response, data = self._make_request(link)
         if response_code != 200:
@@ -85,6 +94,7 @@ class statsGenerator:
             return events
 
     def _get_file_changes(self, commit_link, files_dict):
+        """Get the file changes from a commit link."""
         response_code, response, commit = self._make_request(commit_link)
         if response_code != 200:
             return
@@ -100,6 +110,7 @@ class statsGenerator:
                 files_dict[filename] += changes_stats
 
     def _get_file_contents(self, file_url):
+        """Get the contents of a file from a file link."""
         response_code, response, file = self._make_request(file_url)
         if response_code != 200:
             return
@@ -109,6 +120,7 @@ class statsGenerator:
         return len(decoded_content)
 
     def _get_file_lines(self, contents_link, lines_dict):
+        """Get the lines of code for all files in a directory from a contents link."""
         response_code, response, contents = self._make_request(contents_link)
         if response_code != 200:
             return
@@ -127,6 +139,7 @@ class statsGenerator:
                 lines_dict[filename] = lines
 
     def get_top_five(self, files_dict):
+        """Get the top 5 files by a given value from a dictionary."""
         files = []
         for file, value in files_dict.items():
             files.append((file, value))
@@ -134,6 +147,14 @@ class statsGenerator:
         return sorted(files, key = lambda x: x[1], reverse = True)[:5]
 
     def get_pulls(self):
+        """
+        Retrieves all pull requests from the repository and calculates statistics.
+        
+        Gets all pull requests using the GitHub API, counts the total number of pulls,
+        and tracks the number of pull requests per user. Updates instance variables:
+        - self.num_pulls: Total number of pull requests
+        - self.top_pulls: Top 5 users by number of pull requests created
+        """
         self._request_counter = 0
         self._current_request_type = "Pulls"
         self._output_message("Getting all pulls...",
@@ -152,6 +173,17 @@ class statsGenerator:
                              "success")
 
     def get_commits(self):
+        """
+        Retrieves all commits from the repository and calculates statistics.
+        
+        Gets all commits using the GitHub API, counts the total number of commits,
+        tracks commits per user, and analyzes merge commits and file changes.
+        Updates instance variables:
+        - self.num_commits: Total number of commits
+        - self.top_commits: Top 5 users by number of commits authored
+        - self.num_merges: Number of merge commits (commits with multiple parents)
+        - self.top_files_changed: Top 5 files by number of times modified in commits
+        """
         self._request_counter = 0
         self._current_request_type = "Commits"
         self._output_message("Getting all commits...",
@@ -194,6 +226,13 @@ class statsGenerator:
                              "success")
 
     def get_files(self):
+        """Gets all files in the repository using the GitHub API and counts lines of code.
+        
+        Makes requests to get contents of all files and directories recursively.
+        Updates instance variables:
+        - self.largest_files: Top 5 files by number of lines of code
+        - self.total_lines_of_code: Total lines of code across all files
+        """
         self._request_counter = 0
         self._current_request_type = "Files"
         self._output_message("Getting all files...",
@@ -208,6 +247,18 @@ class statsGenerator:
                              "success")
 
     def output_results(self):
+        """Outputs formatted statistics about the repository to the console.
+        
+        Prints a summary including:
+        - Total number of pulls, commits, merges and lines of code
+        - Top 5 contributors by number of pull requests
+        - Top 5 contributors by number of commits 
+        - Top 5 most frequently changed files
+        - Top 5 largest files by line count
+        - Remaining GitHub API rate limit
+        
+        Uses colored output for better readability.
+        """
         def _output_top_five(title: str, top_five: list) -> None:
             print("\n" + colored(title, "light_magenta", attrs = ["bold"]))
             for item_index in range(len(top_five)):
