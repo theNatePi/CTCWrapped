@@ -33,6 +33,7 @@ class GitHubAPIClient:
         self.headers = {}
 
         self.rate_limit_refresh = time.time()
+        self.rate_limit_remaining = 0
         self.rate_limit_remaining = self.get_rate_limit_remaining()
         self.request_type = "NULL"
 
