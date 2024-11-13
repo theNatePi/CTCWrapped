@@ -49,7 +49,7 @@ class Outputter(DummyOutputter):
         self.output(title, message, "error")
 
 
-class PrintWrapper: # TODO: should this be a DummyOutputter?
+class PrintWrapper: # TODO: should this be a DummyOutputter?, answer: no
     """Print wrapper."""
     def output(self, title: str, message: str, message_type: str) -> None:
         print(message_type, title, message)
