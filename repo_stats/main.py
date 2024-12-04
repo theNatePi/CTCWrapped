@@ -14,12 +14,12 @@ if __name__ == "__main__":
     if not args.user:
         user = input("Enter GitHub Username: ")
     else:
-        user = args.user
+        user = args.user[0]
 
     if not args.repo:
         repo = input("Enter GitHub Repository: ")
     else:
-        repo = args.repo
+        repo = args.repo[0]
 
     stats = StatsGenerator(repo_name=repo, user_name=user, verbose=True)
 
