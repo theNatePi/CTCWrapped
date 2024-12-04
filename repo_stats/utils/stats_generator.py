@@ -203,4 +203,3 @@ class StatsGenerator:
         self.get_pulls()
         self.get_commits()
         self.get_files()
-        self.stats.output_results()
