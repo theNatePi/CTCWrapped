@@ -40,12 +40,12 @@ class RepoStats:
                 print("  " + colored((index + ". " + item + " " + number), attrs = ["dark"]))
 
         print(colored(("#" + "-"*20 + "#"), "green", attrs=["bold"]))
-        print(colored("Num pulls: ", "light_blue", attrs=["bold"]) + colored(self.num_pulls, "light_blue", ))
+        print(colored("Num PRs: ", "light_blue", attrs=["bold"]) + colored(self.num_pulls, "light_blue", ))
         print(colored("Num commits: ", "light_blue", attrs = ["bold"]) + colored(self.num_commits,"light_blue", ))
         print(colored("Num merges: ", "light_blue", attrs = ["bold"]) + colored(self.num_merges, "light_blue", ))
         print(colored("Total lines of code: ", "light_blue", attrs = ["bold"]) + colored(self.total_lines_of_code, "light_blue", ))
 
-        _output_top_five("Most pulls", self.top_pulls)
+        _output_top_five("Most PRs", self.top_pulls)
         _output_top_five("Most commits", self.top_commits)
         _output_top_five("Most files changed", self.top_files_changed)
         _output_top_five("Largest files", self.largest_files)
