@@ -17,7 +17,6 @@ class GitHubAPIClient:
         self.base_url = base_url
         self.gh_token = token
         
-        """
         if self.gh_token is None:
             load_dotenv(Path(env_path or ".env"))
             self.gh_token = os.getenv("GITHUB_TOKEN")
@@ -29,8 +28,6 @@ class GitHubAPIClient:
                              "  - Set the GITHUB_TOKEN environment variable\n")
 
         self.headers = {"Authorization": f"token {self.gh_token}"}
-        """
-        self.headers = {}
 
         self.rate_limit_refresh = time.time()
         self.rate_limit_remaining = 0

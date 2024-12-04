@@ -51,7 +51,7 @@ class RepoStats:
         _output_top_five("Largest files", self.largest_files)
 
         print()
-        print(colored(f"Requests remaining: {self.rate_limit_remaining}", "red"))
+        # print(colored(f"Requests remaining: {self.rate_limit_remaining}", "red"))
 
         print(colored(("#" + "-" * 20 + "#"), "green", attrs = ["bold"]))
         print()

@@ -124,7 +124,7 @@ class StatsGenerator:
                 pulls_by_person.get(pull["user"]["login"], 0) + 1
         self.stats.top_pulls = self.stats.get_top_n(pulls_by_person, 5)
         self.io_handler.output("Pulls retrieved",
-                              f"{self.api_client.request_counter} requests made",
+                              f"{self.api_client.get_rate_limit_used()} requests made",
                                "success")
 
     def get_commits(self):
@@ -154,9 +154,9 @@ class StatsGenerator:
                     commit["author"]["login"], 0) + 1
             except TypeError:
                 failed_commits += 1
-        self.top_commits = self.get_top_n(commits_per_person, 5)
+        self.top_commits = self.stats.get_top_n(commits_per_person, 5)
         self.io_handler.output("Commits retrieved",
-                              f"{self.api_client.request_counter} requests made",
+                              f"{self.api_client.get_rate_limit_used()} requests made",
                                "success")
 
         self.api_client.request_type = "Merges and File Changes"
@@ -175,7 +175,7 @@ class StatsGenerator:
         self.stats.num_merges = merges
         self.stats.top_files_changed = self.stats.get_top_n(files_changed, 5)
         self.io_handler.output("Merges and file changes retrieved",
-                              f"{self.api_client.request_counter} requests made",
+                              f"{self.api_client.get_rate_limit_used()} requests made",
                                "success")
 
     def get_files(self):
@@ -195,7 +195,7 @@ class StatsGenerator:
         self.stats.largest_files = self.stats.get_top_n(line_counts, 5)
         self.stats.total_lines_of_code = sum(line_counts.values())
         self.io_handler.output("Contents retrieved, lines of code retrieved",
-                              f"{self.api_client.request_counter} requests made",
+                              f"{self.api_client.get_rate_limit_used()} requests made",
                                "success")
     
     def generate_all_stats(self):

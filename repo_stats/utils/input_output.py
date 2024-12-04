@@ -10,6 +10,9 @@ class InputOutputHandler:
         
     def output(self, title: str, message: str, message_type: str) -> None:
         self.outputter.output(title, message, message_type)
+    
+    def error(self, title: str, message: str) -> None:
+        self.outputter.output(title, message, "error")
 
 
 class DummyOutputter:
@@ -18,9 +21,6 @@ class DummyOutputter:
         self.api_client = api_client
 
     def output(self, title: str, message: str, message_type: str) -> None:
-        pass
-
-    def error(self, title: str, message: str) -> None:
         pass
 
 
@@ -44,9 +44,6 @@ class Outputter(DummyOutputter):
               f"{open_bracket}{colored(self.api_client.rate_limit_remaining, 'light_magenta', attrs = ['dark'])}"
               f"{close_bracket} {colored(title, color)}: "
               f"{colored(message, attrs = ['dark'])}")
-    
-    def error(self, title: str, message: str) -> None:
-        self.output(title, message, "error")
 
 
 class PrintWrapper: # TODO: should this be a DummyOutputter?, answer: no
