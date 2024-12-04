@@ -108,8 +108,8 @@ class StatsGenerator:
         
         Gets all pull requests using the GitHub API, counts the total number of pulls,
         and tracks the number of pull requests per user. Updates instance variables:
-        - self.num_pulls: Total number of pull requests
-        - self.top_pulls: Top 5 users by number of pull requests created
+        - self.stats.num_pulls: Total number of pull requests
+        - self.stats.top_pulls: Top 5 users by number of pull requests created
         """
         self.api_client.request_type = "Pulls"
         self.io_handler.output("Getting all pulls...",
@@ -134,10 +134,10 @@ class StatsGenerator:
         Gets all commits using the GitHub API, counts the total number of commits,
         tracks commits per user, and analyzes merge commits and file changes.
         Updates instance variables:
-        - self.num_commits: Total number of commits
-        - self.top_commits: Top 5 users by number of commits authored
-        - self.num_merges: Number of merge commits (commits with multiple parents)
-        - self.top_files_changed: Top 5 files by number of times modified in commits
+        - self.stats.num_commits: Total number of commits
+        - self.stats.top_commits: Top 5 users by number of commits authored
+        - self.stats.num_merges: Number of merge commits (commits with multiple parents)
+        - self.stats.top_files_changed: Top 5 files by number of times modified in commits
         """
         self.api_client.request_type = "Commits"
         self.io_handler.output("Getting all commits...",
@@ -183,8 +183,8 @@ class StatsGenerator:
         
         Makes requests to get contents of all files and directories recursively.
         Updates instance variables:
-        - self.largest_files: Top 5 files by number of lines of code
-        - self.total_lines_of_code: Total lines of code across all files
+        - self.stats.largest_files: Top 5 files by number of lines of code
+        - self.stats.total_lines_of_code: Total lines of code across all files
         """
         self.api_client.request_type = "Files"
         self.io_handler.output("Getting all files...",
