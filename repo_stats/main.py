@@ -9,6 +9,7 @@ if __name__ == "__main__":
     )
     parser.add_argument("-u", "--user", nargs=1, help="The GitHub username of the repository owner")
     parser.add_argument("-r", "--repo", nargs=1, help="The name of the repository")
+    parser.add_argument("-v", "--verbose", nargs = 1, help = "Verbose output, yes / no")
     args = parser.parse_args()
 
     if not args.user:
@@ -21,7 +22,15 @@ if __name__ == "__main__":
     else:
         repo = args.repo[0]
 
-    stats = StatsGenerator(repo_name=repo, user_name=user, verbose=True)
+    if not args.verbose:
+        print("Loading...")
+        verbose = "no"
+    else:
+        verbose = args.verbose[0]
+
+    verbose = True if verbose == "yes" else False
+
+    stats = StatsGenerator(repo_name=repo, user_name=user, verbose=verbose)
 
     stats.generate_all_stats()
     stats.stats.output_results()
