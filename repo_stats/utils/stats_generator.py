@@ -154,7 +154,7 @@ class StatsGenerator:
                     commit["author"]["login"], 0) + 1
             except TypeError:
                 failed_commits += 1
-        self.top_commits = self.stats.get_top_n(commits_per_person, 5)
+        self.stats.top_commits = self.stats.get_top_n(commits_per_person, 5)
         self.io_handler.output("Commits retrieved",
                               f"{self.api_client.get_rate_limit_used()} requests made",
                                "success")
