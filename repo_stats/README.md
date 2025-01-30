@@ -1,5 +1,6 @@
 ## Generating Stats from Repos
 
+#### Example output
 When run, the repo stats will display something like the following:
 
 <img width="334" alt="Screenshot 2025-01-30 at 1 51 46 PM" src="https://github.com/user-attachments/assets/ab1d91d0-73df-45a3-adf2-dced84ea5b59" />
