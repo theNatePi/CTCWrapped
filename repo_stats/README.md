@@ -20,5 +20,7 @@ When run, the repo stats will display something like the following:
   
 #### Advanced Usage
 You can run the script from the command line as well: <br>
-`python main.py [-u USERNAME] [-r REPO] [-v VERBOSE]`
+`python main.py [-u USERNAME] [-r REPO] [-v VERBOSE]` <br>
+Where `VERBOSE` is one of `yes` or `no`
+
 See `python main.py -h` for more.
