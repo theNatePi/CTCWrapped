@@ -17,3 +17,8 @@ When run, the repo stats will display something like the following:
 5. Run main.py with `python main.py`
    1. **Note:** due to limitations with the GitHub API, all changes on the repo must be merged into `main` on the respective repo before stats can be gathered
    2. **Note:** if using the `public_repo` token permissions, the repository must be public
+  
+#### Advanced Usage
+You can run the script from the command line as well: <br>
+`python main.py [-u USERNAME] [-r REPO] [-v VERBOSE]`
+See `python main.py -h` for more.
