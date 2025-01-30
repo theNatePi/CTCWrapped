@@ -24,4 +24,8 @@ You can run the script from the command line as well: <br>
 `python main.py [-u USERNAME] [-r REPO] [-v VERBOSE]` <br>
 Where `VERBOSE` is one of `yes` or `no`
 
+##### Verbose Output
+The verbose output will be in the following format <br>
+`[<SEARCH CATEGORY>] [<REAMAINING API CALLS>] Making request: <URL>`
+
 See `python main.py -h` for more.
