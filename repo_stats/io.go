@@ -18,13 +18,14 @@ func (c Color) String() string {
 
 // Predefined color constants
 var (
-	Err       = Color{"\033[38;2;205;41;73m"}
-	Success   = Color{"\033[38;2;127;255;212m"}
-	Subtle    = Color{"\033[38;2;105;105;105m"}
-	Title     = Color{"\033[38;2;0;255;255m"}
-	Highlight = Color{"\033[38;2;153;102;204m"}
-	End       = Color{"\033[0m"}
-	None      = Color{""}
+	Err         = Color{"\033[38;2;205;41;73m"}
+	Success     = Color{"\033[38;2;127;255;212m"}
+	Subtle      = Color{"\033[38;2;105;105;105m"}
+	Title       = Color{"\u001B[1m\033[38;2;0;255;255m"}
+	TitleNoBold = Color{"\033[38;2;0;255;255m"}
+	Highlight   = Color{"\033[38;2;153;102;204m"}
+	End         = Color{"\033[0m"}
+	None        = Color{""}
 )
 
 // GetInput
