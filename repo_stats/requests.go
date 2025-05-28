@@ -23,7 +23,7 @@ func makeRequest(method string, url string, body string, headers map[string]stri
 	}
 	req, err := http.NewRequest(method, url, readerBody)
 	if err != nil {
-		return nil, wrapError(err, "makeRequest", "while creating request")
+		return nil, WrapError(err, "makeRequest", "while creating request")
 	}
 	if headers != nil {
 		for key, value := range headers {
@@ -34,12 +34,12 @@ func makeRequest(method string, url string, body string, headers map[string]stri
 	// Send request
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, wrapError(err, "makeRequest", "while sending request")
+		return nil, WrapError(err, "makeRequest", "while sending request")
 	}
 
 	// Handle codes
 	if resp.StatusCode != http.StatusOK {
-		return nil, wrapError(errors.New(resp.Status), "get", "status code error")
+		return nil, WrapError(errors.New(resp.Status), "get", "status code error")
 	}
 
 	return resp, nil
@@ -48,14 +48,14 @@ func makeRequest(method string, url string, body string, headers map[string]stri
 func get(url string, body string, headers map[string]string) (string, error) {
 	resp, err := makeRequest("GET", url, body, headers)
 	if err != nil {
-		return "", wrapError(err, "get", "while calling makeRequest")
+		return "", WrapError(err, "get", "while calling makeRequest")
 	}
 
 	// Read response
 	defer resp.Body.Close()
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", wrapError(err, "get", "while reading response")
+		return "", WrapError(err, "get", "while reading response")
 	}
 	respBodyString := string(respBody)
 	return respBodyString, nil
@@ -65,12 +65,12 @@ func parseBody(body string) (map[string]interface{}, error) {
 	var result map[string]interface{}
 	err := json.Unmarshal([]byte(body), &result)
 	if err != nil {
-		return nil, wrapError(err, "parseBody", "while parsing body")
+		return nil, WrapError(err, "parseBody", "while parsing body")
 	}
 	return result, nil
 }
 
-// extractJson
+// ExtractJson
 //
 // Extract the contents of a json map
 // Parameters:
@@ -85,16 +85,16 @@ func parseBody(body string) (map[string]interface{}, error) {
 //	   - for a "name" that maps to a string
 //	extractJson[map[string]interface{}](parsedBody, "moreData")
 //	   - for a "moreData" that maps to another map
-func extractJson[T any](parsedJson map[string]interface{}, key string) (T, error) {
+func ExtractJson[T any](parsedJson map[string]interface{}, key string) (T, error) {
 	var zero T
 	value, exists := parsedJson[key]
 	if !exists {
-		return zero, wrapError(errors.New(key), "extractJson", "key not found")
+		return zero, WrapError(errors.New(key), "extractJson", "key not found")
 	}
 
 	result, ok := value.(T)
 	if !ok {
-		return zero, wrapError(errors.New(key), "extractJson",
+		return zero, WrapError(errors.New(key), "extractJson",
 			"value is not a \""+reflect.TypeOf(zero).String()+
 				"\" but a \""+reflect.TypeOf(value).String()+"\"")
 	}
