@@ -1,9 +1,11 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"io"
 	"net/http"
+	"reflect"
 	"strings"
 	"time"
 )
@@ -15,13 +17,18 @@ func makeRequest(method string, url string, body string, headers map[string]stri
 	}
 
 	// Create request
-	readerBody := strings.NewReader(body)
+	var readerBody io.Reader = nil
+	if body != "" {
+		readerBody = strings.NewReader(body)
+	}
 	req, err := http.NewRequest(method, url, readerBody)
 	if err != nil {
 		return nil, wrapError(err, "makeRequest", "while creating request")
 	}
-	for key, value := range headers {
-		req.Header.Add(key, value)
+	if headers != nil {
+		for key, value := range headers {
+			req.Header.Add(key, value)
+		}
 	}
 
 	// Send request
@@ -38,17 +45,59 @@ func makeRequest(method string, url string, body string, headers map[string]stri
 	return resp, nil
 }
 
-func get(url string, body string, headers map[string]string) ([]byte, error) {
+func get(url string, body string, headers map[string]string) (string, error) {
 	resp, err := makeRequest("GET", url, body, headers)
 	if err != nil {
-		return nil, wrapError(err, "get", "while calling makeRequest")
+		return "", wrapError(err, "get", "while calling makeRequest")
 	}
 
 	// Read response
 	defer resp.Body.Close()
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, wrapError(err, "get", "while reading response")
+		return "", wrapError(err, "get", "while reading response")
 	}
-	return respBody, nil
+	respBodyString := string(respBody)
+	return respBodyString, nil
+}
+
+func parseBody(body string) (map[string]interface{}, error) {
+	var result map[string]interface{}
+	err := json.Unmarshal([]byte(body), &result)
+	if err != nil {
+		return nil, wrapError(err, "parseBody", "while parsing body")
+	}
+	return result, nil
+}
+
+// extractJson
+//
+// Extract the contents of a json map
+// Parameters:
+//   - parsedJson: map of string to interface from json.Unmarshal([]byte(body), &result)
+//   - key: The key to look for in the json
+//
+// # Returns T type result found in the json, error on failure
+//
+// Example usage:
+//
+//	extractJson[string](parsedBody, "name")
+//	   - for a "name" that maps to a string
+//	extractJson[map[string]interface{}](parsedBody, "moreData")
+//	   - for a "moreData" that maps to another map
+func extractJson[T any](parsedJson map[string]interface{}, key string) (T, error) {
+	var zero T
+	value, exists := parsedJson[key]
+	if !exists {
+		return zero, wrapError(errors.New(key), "extractJson", "key not found")
+	}
+
+	result, ok := value.(T)
+	if !ok {
+		return zero, wrapError(errors.New(key), "extractJson",
+			"value is not a \""+reflect.TypeOf(zero).String()+
+				"\" but a \""+reflect.TypeOf(value).String()+"\"")
+	}
+
+	return result, nil
 }
