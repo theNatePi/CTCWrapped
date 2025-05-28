@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"golang.org/x/term"
+	"io"
 	"os"
 	"strings"
 	"time"
@@ -216,4 +218,29 @@ func UpdatableOutputter() (func(), func(string, Color)) {
 			fmt.Printf("\r%s\r%s%s%s", strings.Repeat(" ", maxOutput), textColor, text, End)
 			maxOutput = max(maxOutput, len(text))
 		}
+}
+
+// readEnv
+// Reads in env vars from a file, places them into a map
+//
+// Parameters:
+//   - file: Reader for environment file
+//
+// Returns map which maps env var to assignment
+func readEnv(file io.Reader) (map[string]string, error) {
+	envs := make(map[string]string)
+	scanner := bufio.NewScanner(file)
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
+	for scanner.Scan() {
+		line := scanner.Text()
+		items := strings.SplitN(line, "=", 2)
+		if len(items) != 2 {
+			continue
+		}
+		// Trim spaces and assign a variable to its item
+		envs[strings.Trim(items[0], " ")] = strings.Trim(items[1], " ")
+	}
+	return envs, nil
 }
