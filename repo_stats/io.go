@@ -6,6 +6,7 @@ import (
 	"golang.org/x/term"
 	"os"
 	"strings"
+	"time"
 )
 
 type Color struct {
@@ -124,21 +125,30 @@ func OutputFrom(messageItems []string, messageColors []Color) error {
 }
 
 // AnimatedLoader
-// Create a loader function, outputting text with animated ellipses on each function call
+// Create an animated loading status
 //
 // Parameters:
 //   - text: Text to output prior to ellipses
 //   - textColor: Color of text
+//   - stopCh: Flag to stop the routine, must be false ro start, should be set to true to stop
 //
-// Returns func which outputs loading text on each call
-func AnimatedLoader(text string, textColor Color) func() {
+// Should be run as goroutine, stopped by setting stopCh <- true
+func AnimatedLoader(text string, textColor Color, stopCh chan bool) {
 	count := 0
-	return func() {
-		fmt.Printf("\r%s%s%s%s%s", textColor, text,
-			strings.Repeat(".", count), strings.Repeat(" ", 3-count), End)
-		count++
-		if count > 3 {
-			count = 0
+	ticker := time.NewTicker(250 * time.Millisecond)
+
+	for {
+		select {
+		case <-stopCh:
+			ticker.Stop()
+			return
+		case <-ticker.C:
+			fmt.Printf("\r%s%s%s%s%s\r", textColor, text,
+				strings.Repeat(".", count), strings.Repeat(" ", 3-count), End)
+			count++
+			if count > 3 {
+				count = 0
+			}
 		}
 	}
 }
@@ -152,16 +162,21 @@ func AnimatedLoader(text string, textColor Color) func() {
 //   - total: The max value of the loader
 //
 // Returns a loader function which, when called, progresses and prints the loader
-func ProgressLoader(text string, textColor Color, total int) func() {
+func ProgressLoader(text string, textColor Color, total int) func(string) {
 	count := 0
-	return func() {
+	_text := text
+	loader := func(updatedText string) {
+		if updatedText != "" {
+			_text = updatedText
+		}
+
 		width, _, err := term.GetSize(int(os.Stdout.Fd()))
 		if err != nil {
 			width = total
 		}
 
 		// Calculate available width for progress bar
-		prefixLen := len(text) + 3 // text + " [" + "]"
+		prefixLen := len(_text) + 3 // _text + " [" + "]"
 		barWidth := width - prefixLen
 		if barWidth < 10 {
 			barWidth = 10
@@ -172,7 +187,7 @@ func ProgressLoader(text string, textColor Color, total int) func() {
 		remainingCount := barWidth - progressCount
 
 		fmt.Printf("\r%s%s%s %s[%s%s]%s",
-			textColor, text, End,
+			textColor, _text, End,
 			Subtle,
 			strings.Repeat("#", progressCount),
 			strings.Repeat("-", remainingCount),
@@ -183,4 +198,22 @@ func ProgressLoader(text string, textColor Color, total int) func() {
 			count = total
 		}
 	}
+	loader("")
+	return loader
+}
+
+// UpdatableOutputter
+// Creates updatable line of text
+//
+// Returns function for resetting the output, function for updating the output
+func UpdatableOutputter() (func(), func(string, Color)) {
+	maxOutput := 0
+	return func() {
+			fmt.Print("\r" + strings.Repeat(" ", maxOutput))
+		},
+		func(text string, textColor Color) {
+			// Clear old text first, then print new text
+			fmt.Printf("\r%s\r%s%s%s", strings.Repeat(" ", maxOutput), textColor, text, End)
+			maxOutput = max(maxOutput, len(text))
+		}
 }
