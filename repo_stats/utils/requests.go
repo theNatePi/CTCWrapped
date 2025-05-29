@@ -1,4 +1,4 @@
-package main
+package utils
 
 import (
 	"encoding/json"
@@ -45,7 +45,7 @@ func makeRequest(method string, url string, body string, headers map[string]stri
 	return resp, nil
 }
 
-func get(url string, body string, headers map[string]string) (string, error) {
+func Get(url string, body string, headers map[string]string) (string, error) {
 	resp, err := makeRequest("GET", url, body, headers)
 	if err != nil {
 		return "", WrapError(err, "get", "while calling makeRequest")
@@ -61,7 +61,7 @@ func get(url string, body string, headers map[string]string) (string, error) {
 	return respBodyString, nil
 }
 
-func parseBody(body string) (map[string]interface{}, error) {
+func ParseBody(body string) (map[string]interface{}, error) {
 	var result map[string]interface{}
 	err := json.Unmarshal([]byte(body), &result)
 	if err != nil {
