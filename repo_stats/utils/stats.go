@@ -1,6 +1,8 @@
 package utils
 
-import "sort"
+import (
+	"fmt"
+)
 
 type Stats struct {
 	RepoUser          string
@@ -29,18 +31,20 @@ func NewStats(repoUser string, repoName string,
 		ignoreExtensions: ignoreExtensions, ignoreFiles: ignoreFiles}
 }
 
-func (x Stats) SetPRs(PRs []interface{}) {
+func (x *Stats) SetPRs(PRs []interface{}) {
 	x.numPRs = len(PRs)
 	x.allPRs = PRs
 	for _, PR := range PRs {
 		_user := PR.(map[string]interface{})["user"]
 		_login := _user.(map[string]interface{})["login"]
 		attribution := _login.(string)
-		x.prAttribution[attribution]++
+		if attribution != "dependabot[bot]" {
+			x.prAttribution[attribution]++
+		}
 	}
 }
 
-func (x Stats) SetCommits(commits []interface{}) {
+func (x *Stats) SetCommits(commits []interface{}) {
 	x.numCommits = len(commits)
 	x.allCommits = commits
 	for _, commit := range commits {
@@ -54,46 +58,60 @@ func (x Stats) SetCommits(commits []interface{}) {
 	}
 }
 
-func (x Stats) TopPRs(n int) map[string]int {
-	keys := make([]string, 0, len(x.prAttribution))
-	for key := range x.prAttribution {
-		keys = append(keys, key)
-	}
+func (x *Stats) SetFileUrls(fileURLs map[string]string) {
+	x.fileURls = fileURLs
+}
 
-	sort.Slice(keys, func(i, j int) bool {
-		return x.prAttribution[keys[i]] > x.prAttribution[keys[j]]
-	})
-
-	if n > len(keys) {
-		n = len(keys)
+func (x *Stats) SetFileSizes(fileSizes map[string]int) {
+	x.fileSizes = fileSizes
+	for _, fileSize := range x.fileSizes {
+		x.totalLinesOfCode += fileSize
 	}
+}
 
-	result := make(map[string]int)
-	for i := 0; i < n && i < len(keys); i++ {
-		key := keys[i]
-		result[key] = x.prAttribution[key]
-	}
+func (x *Stats) SetFileChanges(fileChanges map[string]int) {
+	x.fileChanges = fileChanges
+}
+
+func (x *Stats) TopPRs(n int) map[string]int {
+	result := topnMapStrInt(x.prAttribution, n)
 	return result
 }
 
-func (x Stats) TopCommits(n int) map[string]int {
-	keys := make([]string, 0, len(x.commitAttribution))
-	for key := range x.commitAttribution {
-		keys = append(keys, key)
-	}
-
-	sort.Slice(keys, func(i, j int) bool {
-		return x.commitAttribution[keys[i]] > x.commitAttribution[keys[j]]
-	})
-
-	if n > len(keys) {
-		n = len(keys)
-	}
-
-	result := make(map[string]int)
-	for i := 0; i < n && i < len(keys); i++ {
-		key := keys[i]
-		result[key] = x.commitAttribution[key]
-	}
+func (x *Stats) TopCommits(n int) map[string]int {
+	result := topnMapStrInt(x.commitAttribution, n)
 	return result
+}
+
+func (x *Stats) TopFileSizes(n int) map[string]int {
+	result := x.filterFiles(x.fileSizes)
+	result = topnMapStrInt(result, n)
+	return result
+}
+
+func (x *Stats) TopFileChanges(n int) map[string]int {
+	result := x.filterFiles(x.fileChanges)
+	result = topnMapStrInt(result, n)
+	return result
+}
+
+func (x *Stats) TotalLinesOfCode() int {
+	return x.totalLinesOfCode
+}
+
+func (x *Stats) OutputResults() {
+	fmt.Println("\n")
+
+	OutputWithTitle("Stats For:", Title,
+		x.RepoUser+"/"+x.RepoName, Subtle)
+	fmt.Println()
+
+	Output("Top PRs:", TitleNoBold)
+	printTop(x.TopPRs(5))
+	Output("Top Commits:", TitleNoBold)
+	printTop(x.TopCommits(5))
+	Output("Top File Sizes:", TitleNoBold)
+	printTop(x.TopFileSizes(5))
+	Output("Top File Changes:", TitleNoBold)
+	printTop(x.TopFileChanges(5))
 }

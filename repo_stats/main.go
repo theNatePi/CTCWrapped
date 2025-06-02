@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"repo_stats/services"
@@ -22,9 +21,12 @@ func main() {
 		return
 	}
 
+	repoUser := utils.GetInput("Repository Owner", utils.Title)
+	repoName := utils.GetInput("Repository Name", utils.Title)
+
 	// Make stuff
-	api := services.NewGHAPI("ctc-uci", "lpa", envData["GITHUB_TOKEN"])
-	stats := utils.NewStats("ctc-uci", "lpa", []string{}, []string{})
+	api := services.NewGHAPI(repoUser, repoName, envData["GITHUB_TOKEN"])
+	stats := utils.NewStats(repoUser, repoName, []string{".png", ".svg", ".jpg", ".lock"}, []string{"package-lock.json", "yarn.lock"})
 
 	//	Get PRs
 	prs, err := api.GetPRs()
@@ -41,10 +43,19 @@ func main() {
 	}
 	stats.SetCommits(commits)
 
-	fmt.Println(stats.TopPRs(5))
-	fmt.Println(stats.TopCommits(5))
-
 	// Get data from the commits
+	fileURLs, fileSizes, fileChanges, err := api.ExtractFileData(commits)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+
+	stats.SetFileUrls(fileURLs)
+	stats.SetFileSizes(fileSizes)
+	stats.SetFileChanges(fileChanges)
+
+	stats.OutputResults()
+
 	err = utils.OutputFrom([]string{"[Rate Limit]", api.GetRateLimitRemainingString()},
 		[]utils.Color{utils.Subtle, utils.Highlight})
 	if err != nil {

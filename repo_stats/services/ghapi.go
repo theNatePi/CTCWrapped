@@ -84,14 +84,35 @@ func (x *GHAPI) GetRateLimitReset() time.Time {
 
 func (x *GHAPI) GetPRs() ([]interface{}, error) {
 	x.RequestCategory = "Pull Requests"
+	// Make initial call
 	formattedUrl := fmt.Sprintf("https://api.github.com/repos/%s/%s/pulls?state=all",
 		x.RepoOwner, x.RepoName)
-	body, _, err := x.makeRequest(formattedUrl, "")
+	body, headers, err := x.makeRequest(formattedUrl, "")
 	if err != nil {
 		return nil, err
 	}
 	parsedBody, err := utils.ParseBody(body)
-	return parsedBody.([]interface{}), nil
+	if err != nil {
+		return nil, err
+	}
+	prs := parsedBody.([]interface{})
+
+	//	While there are more pages, explore them
+	nextLink := parseNextLinkRegex(headers.Get("Link"))
+	for nextLink != "" {
+		body, headers, err = x.makeRequest(nextLink, "")
+		if err != nil {
+			return nil, err
+		}
+		parsedBody, err = utils.ParseBody(body)
+		if err != nil {
+			return nil, err
+		}
+		prs = append(prs, parsedBody.([]interface{})...)
+		nextLink = parseNextLinkRegex(headers.Get("Link"))
+	}
+
+	return prs, nil
 }
 
 func (x *GHAPI) GetCommits() ([]interface{}, error) {
