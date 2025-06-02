@@ -45,24 +45,26 @@ func makeRequest(method string, url string, body string, headers map[string]stri
 	return resp, nil
 }
 
-func Get(url string, body string, headers map[string]string) (string, error) {
+func Get(url string, body string, headers map[string]string) (string, http.Header, error) {
 	resp, err := makeRequest("GET", url, body, headers)
 	if err != nil {
-		return "", WrapError(err, "get", "while calling makeRequest")
+		return "", nil, WrapError(err, "get", "while calling makeRequest")
 	}
 
 	// Read response
 	defer resp.Body.Close()
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", WrapError(err, "get", "while reading response")
+		return "", nil, WrapError(err, "get", "while reading response")
 	}
 	respBodyString := string(respBody)
-	return respBodyString, nil
+
+	respHeader := resp.Header
+	return respBodyString, respHeader, nil
 }
 
-func ParseBody(body string) (map[string]interface{}, error) {
-	var result map[string]interface{}
+func ParseBody(body string) (interface{}, error) {
+	var result interface{}
 	err := json.Unmarshal([]byte(body), &result)
 	if err != nil {
 		return nil, WrapError(err, "parseBody", "while parsing body")

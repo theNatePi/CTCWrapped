@@ -220,14 +220,14 @@ func UpdatableOutputter() (func(), func(string, Color)) {
 		}
 }
 
-// readEnv
+// ReadEnv
 // Reads in env vars from a file, places them into a map
 //
 // Parameters:
 //   - file: Reader for environment file
 //
 // Returns map which maps env var to assignment
-func readEnv(file io.Reader) (map[string]string, error) {
+func ReadEnv(file io.Reader) (map[string]string, error) {
 	envs := make(map[string]string)
 	scanner := bufio.NewScanner(file)
 	if err := scanner.Err(); err != nil {
