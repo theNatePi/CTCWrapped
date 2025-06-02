@@ -119,7 +119,7 @@ func (x *Stats) OutputResults() {
 	printTop(x.TopPRs(5))
 	Output("Top Commits:", TitleNoBold)
 	printTop(x.TopCommits(5))
-	Output("Top File Sizes:", TitleNoBold)
+	Output("Top File Sizes (lines of code):", TitleNoBold)
 	printTop(x.TopFileSizes(5))
 	Output("Top File Changes:", TitleNoBold)
 	printTop(x.TopFileChanges(5))
