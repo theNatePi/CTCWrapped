@@ -32,3 +32,4 @@ Generate a GitHub Personal Access Token
 4. Wait for all calls to complete, this may take a while
 
 ## Example Output
+<img width="375" alt="image" src="https://github.com/user-attachments/assets/c811b50d-7e49-41ed-a7c4-92ecdd26f75d" />
