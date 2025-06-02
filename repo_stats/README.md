@@ -11,6 +11,13 @@ As well as:
 - Top (5) files by total changes
 
 ## Installation
+### Download Binary 
+(Recommended)
+1. Go to [releases](https://github.com/theNatePi/CTCWrapped/releases/)
+2. Install release for your platform
+3. Run from terminal
+
+### Build From Source
 1. Install Go https://go.dev/doc/install
 2. Clone repo, navigate into `/CTCWrapped/repo_stats`
 3. Run `go build`
