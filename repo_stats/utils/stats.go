@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"strconv"
 )
 
 type Stats struct {
@@ -104,6 +105,14 @@ func (x *Stats) OutputResults() {
 
 	OutputWithTitle("Stats For:", Title,
 		x.RepoUser+"/"+x.RepoName, Subtle)
+	fmt.Println()
+
+	OutputFrom([]string{"Lines of code:", strconv.Itoa(x.totalLinesOfCode)},
+		[]Color{TitleNoBold, Subtle})
+	OutputFrom([]string{"Total commits:", strconv.Itoa(x.numCommits)},
+		[]Color{TitleNoBold, Subtle})
+	OutputFrom([]string{"Total PRs:", strconv.Itoa(x.numPRs)},
+		[]Color{TitleNoBold, Subtle})
 	fmt.Println()
 
 	Output("Top PRs:", TitleNoBold)
