@@ -1,6 +1,9 @@
 package services
 
-import "regexp"
+import (
+	"regexp"
+	"strings"
+)
 
 func parseNextLinkRegex(linkHeader string) string {
 	// Regex to match <URL>; rel="next"
@@ -11,4 +14,13 @@ func parseNextLinkRegex(linkHeader string) string {
 		return matches[1]
 	}
 	return ""
+}
+
+func numLines(s string) int {
+	// https://stackoverflow.com/questions/27466545/how-do-i-get-the-number-of-lines-in-a-string
+	n := strings.Count(s, "\n")
+	if !strings.HasSuffix(s, "\n") {
+		n++
+	}
+	return n
 }

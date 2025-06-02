@@ -57,7 +57,9 @@ func (x *GHAPI) makeRequest(url string, body string) (string, http.Header, error
 		return "", nil, err
 	}
 	convertedLimit, err := strconv.Atoi(header.Get("X-RateLimit-Remaining"))
-	x.rateLimitRemaining = convertedLimit
+	if err == nil {
+		x.rateLimitRemaining = convertedLimit
+	}
 	if x.rateLimitRemaining == 0 {
 		convertedReset, err := strconv.ParseInt(header.Get("X-RateLimit-Reset"), 10, 64)
 		if err != nil {
@@ -124,8 +126,9 @@ func (x *GHAPI) GetCommits() ([]interface{}, error) {
 	return commits, nil
 }
 
-func (x *GHAPI) GetCommitData(commitURL string) (interface{}, error) {
+func (x *GHAPI) getCommitData(commit interface{}) (interface{}, error) {
 	x.RequestCategory = "Individual Commit"
+	commitURL := commit.(map[string]interface{})["url"].(string)
 	body, _, err := x.makeRequest(commitURL, "")
 	if err != nil {
 		return nil, err
@@ -137,11 +140,46 @@ func (x *GHAPI) GetCommitData(commitURL string) (interface{}, error) {
 	return parsedBody, nil
 }
 
-func (x *GHAPI) GetFile(fileURL string) (string, error) {
+func (x *GHAPI) getFileSize(fileURL string) (int, error) {
 	x.RequestCategory = "File"
 	file, _, err := x.makeRequest(fileURL, "")
 	if err != nil {
-		return "", err
+		return -1, err
 	}
-	return file, nil
+
+	lineCount := numLines(file)
+	return lineCount, nil
+}
+
+func (x *GHAPI) ExtractFileData(commits []interface{}) (map[string]string, map[string]int, map[string]int, error) {
+	fileURLMap := make(map[string]string)
+	fileSizeMap := make(map[string]int)
+	fileChangesMap := make(map[string]int)
+
+	for _, commit := range commits {
+		commitData, err := x.getCommitData(commit)
+		if err != nil {
+			return nil, nil, nil, err
+		}
+		_files := commitData.(map[string]interface{})["files"].([]interface{})
+
+		for _, file := range _files {
+			_filename := file.(map[string]interface{})["filename"].(string)
+			_fileURL := file.(map[string]interface{})["raw_url"].(string)
+			fileURLMap[_filename] = _fileURL
+
+			_fileChanges := file.(map[string]interface{})["changes"].(float64)
+			fileChangesMap[_filename] += int(_fileChanges)
+		}
+	}
+
+	for file, url := range fileURLMap {
+		fileSize, err := x.getFileSize(url)
+		if err != nil {
+			return nil, nil, nil, err
+		}
+		fileSizeMap[file] = fileSize
+	}
+
+	return fileURLMap, fileSizeMap, fileChangesMap, nil
 }
