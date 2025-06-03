@@ -8,6 +8,13 @@ import (
 	"strconv"
 )
 
+// topnMapStrInt
+// Gets the top n items from a map, ranked by their integer value
+//
+// Parameters:
+//   - x: map of strings to integers
+//
+// Returns map of only the top 5 items ranked by value
 func topnMapStrInt(x map[string]int, n int) map[string]int {
 	keys := make([]string, 0, len(x))
 	for key := range x {
@@ -30,6 +37,13 @@ func topnMapStrInt(x map[string]int, n int) map[string]int {
 	return result
 }
 
+// filterFiles
+// Filters files based on filepath and file extension filtering rules
+//
+// Parameters:
+//   - fileMap: map of file paths to some arbitrary integer value (size, changes, etc)
+//
+// Returns: filtered fileMap
 func (x *Stats) filterFiles(fileMap map[string]int) map[string]int {
 	result := make(map[string]int)
 	for file, _ := range fileMap {
@@ -46,6 +60,11 @@ func (x *Stats) filterFiles(fileMap map[string]int) map[string]int {
 	return result
 }
 
+// printTop
+// Prints the items in order of an integer value, prefixed by a number
+//
+// Parameters:
+//   - items: map of items to output with integer value denoting relative value
 func printTop(items map[string]int) {
 	keys := make([]string, 0, len(items))
 	for key := range items {

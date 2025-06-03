@@ -5,11 +5,20 @@ import (
 	"errors"
 	"io"
 	"net/http"
-	"reflect"
 	"strings"
 	"time"
 )
 
+// makeRequest
+// Makes a request using the "net/http" package
+//
+// Parameters:
+//   - method: method for request, such as "get", "put", etc
+//   - url: url to send request to
+//   - body: body content to send alongside url, use empty string for no body
+//   - headers: map of header key value pairs to send with request
+//
+// Returns response pointer and any errors
 func makeRequest(method string, url string, body string, headers map[string]string) (*http.Response, error) {
 	// Create client
 	client := &http.Client{
@@ -45,6 +54,15 @@ func makeRequest(method string, url string, body string, headers map[string]stri
 	return resp, nil
 }
 
+// Get
+// Makes get request
+//
+// Parameters:
+//   - url: url to make request to
+//   - body: body content to send alongside url, use empty string for no body
+//   - headers: map of header key value pairs to send with request
+//
+// Returns response pointer and any errors
 func Get(url string, body string, headers map[string]string) (string, http.Header, error) {
 	resp, err := makeRequest("GET", url, body, headers)
 	if err != nil {
@@ -63,43 +81,18 @@ func Get(url string, body string, headers map[string]string) (string, http.Heade
 	return respBodyString, respHeader, nil
 }
 
+// ParseBody
+// Parses response body to create JSON interface
+//
+// Parameters:
+//   - body: body content to parse
+//
+// Returns JSON interface
 func ParseBody(body string) (interface{}, error) {
 	var result interface{}
 	err := json.Unmarshal([]byte(body), &result)
 	if err != nil {
 		return nil, WrapError(err, "parseBody", "while parsing body")
 	}
-	return result, nil
-}
-
-// ExtractJson
-//
-// Extract the contents of a json map
-// Parameters:
-//   - parsedJson: map of string to interface from json.Unmarshal([]byte(body), &result)
-//   - key: The key to look for in the json
-//
-// # Returns T type result found in the json, error on failure
-//
-// Example usage:
-//
-//	extractJson[string](parsedBody, "name")
-//	   - for a "name" that maps to a string
-//	extractJson[map[string]interface{}](parsedBody, "moreData")
-//	   - for a "moreData" that maps to another map
-func ExtractJson[T any](parsedJson map[string]interface{}, key string) (T, error) {
-	var zero T
-	value, exists := parsedJson[key]
-	if !exists {
-		return zero, WrapError(errors.New(key), "extractJson", "key not found")
-	}
-
-	result, ok := value.(T)
-	if !ok {
-		return zero, WrapError(errors.New(key), "extractJson",
-			"value is not a \""+reflect.TypeOf(zero).String()+
-				"\" but a \""+reflect.TypeOf(value).String()+"\"")
-	}
-
 	return result, nil
 }
