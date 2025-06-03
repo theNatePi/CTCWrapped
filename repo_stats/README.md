@@ -33,7 +33,7 @@ Generate a GitHub Personal Access Token
     - Match the format of `.env.example`
 
 ## Generate Stats
-1. Run `./repo_stats`
+1. Run `./repo_stats` (or the name of your binary)
 2. Provide GitHub username for the repository owner
 3. Provide the repository name
 4. Wait for all calls to complete, this may take a while
