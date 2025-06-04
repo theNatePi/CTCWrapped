@@ -39,20 +39,18 @@ func topnMapStrInt(x map[string]int, n int) map[string]int {
 }
 
 func (x *Stats) isInsideDirectory(filePath string) (bool, error) {
+	cleanFile := filepath.Clean(filePath)
+
 	for _, dirPath := range x.ignoreDirs {
-		// Clean both paths to handle .. and . components
-		cleanFile := filepath.Clean(filePath)
 		cleanDir := filepath.Clean(dirPath)
 
-		// Get relative path from directory to file
-		rel, err := filepath.Rel(cleanDir, cleanFile)
-		if err != nil {
-			return false, err
+		// Add separator to ensure we match full directory names
+		if !strings.HasSuffix(cleanDir, string(filepath.Separator)) {
+			cleanDir += string(filepath.Separator)
 		}
 
-		// If the relative path starts with "..", the file is outside the directory
-		insideDir := !strings.HasPrefix(rel, "..")
-		if insideDir {
+		// Check if file path starts with directory path
+		if strings.HasPrefix(cleanFile+string(filepath.Separator), cleanDir) {
 			return true, nil
 		}
 	}

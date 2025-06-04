@@ -61,6 +61,8 @@ func main() {
 
 	stats.OutputResults()
 
+	//fmt.Println(stats.Files())
+
 	err = utils.OutputFrom([]string{"[Rate Limit]", api.GetRateLimitRemainingString()},
 		[]utils.Color{utils.Subtle, utils.Highlight})
 	if err != nil {

@@ -182,3 +182,7 @@ func (x *Stats) OutputResults() {
 	Output("Top File Changes:", TitleNoBold)
 	printTop(x.TopFileChanges(5))
 }
+
+func (x *Stats) Files() map[string]int {
+	return x.fileSizes
+}

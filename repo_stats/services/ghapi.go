@@ -1,6 +1,7 @@
 package services
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"repo_stats/utils"
@@ -172,6 +173,50 @@ func (x *GHAPI) getFileSize(fileURL string) (int, error) {
 	return lineCount, nil
 }
 
+func (x *GHAPI) GetAllFilesFromMainBranch() ([]string, error) {
+	// First, get the main branch's latest commit SHA
+	branchURL := fmt.Sprintf("https://api.github.com/repos/%s/%s/branches/main", x.RepoOwner, x.RepoName)
+	branchData, _, err := x.makeRequest(branchURL, "")
+	if err != nil {
+		return nil, err
+	}
+
+	branchInfo := make(map[string]interface{})
+	if err := json.Unmarshal([]byte(branchData), &branchInfo); err != nil {
+		return nil, err
+	}
+
+	commitSHA := branchInfo["commit"].(map[string]interface{})["sha"].(string)
+
+	// Get the tree recursively
+	treeURL := fmt.Sprintf("https://api.github.com/repos/%s/%s/git/trees/%s?recursive=1", x.RepoOwner, x.RepoName, commitSHA)
+	treeData, _, err := x.makeRequest(treeURL, "")
+	if err != nil {
+		return nil, err
+	}
+
+	var treeResponse struct {
+		Tree []struct {
+			Path string `json:"path"`
+			Type string `json:"type"`
+			URL  string `json:"url"`
+		} `json:"tree"`
+	}
+
+	if err := json.Unmarshal([]byte(treeData), &treeResponse); err != nil {
+		return nil, err
+	}
+
+	fileNames := make([]string, 0, len(treeResponse.Tree))
+	for _, item := range treeResponse.Tree {
+		if item.Type == "blob" { // Only files, not directories
+			fileNames = append(fileNames, item.Path)
+		}
+	}
+
+	return fileNames, nil
+}
+
 func (x *GHAPI) ExtractFileData(commits []interface{}) (map[string]string, map[string]int, map[string]int, error) {
 	fileURLMap := make(map[string]string)
 	fileSizeMap := make(map[string]int)
@@ -186,12 +231,20 @@ func (x *GHAPI) ExtractFileData(commits []interface{}) (map[string]string, map[s
 
 		for _, file := range _files {
 			_filename := file.(map[string]interface{})["filename"].(string)
-			_fileURL := file.(map[string]interface{})["raw_url"].(string)
-			fileURLMap[_filename] = _fileURL
-
 			_fileChanges := file.(map[string]interface{})["changes"].(float64)
 			fileChangesMap[_filename] += int(_fileChanges)
 		}
+	}
+
+	fileNames, err := x.GetAllFilesFromMainBranch()
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	for _, fileName := range fileNames {
+		fileUrl := fmt.Sprintf("https://raw.githubusercontent.com/%s/%s/main/%s",
+			x.RepoOwner, x.RepoName, fileName)
+		fileURLMap[fileName] = fileUrl
 	}
 
 	for file, url := range fileURLMap {
