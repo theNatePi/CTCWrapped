@@ -33,6 +33,8 @@ type Stats struct {
 	ignoreExtensions []string
 	// An array of file names (yarn.lock, package-lock.json, etc) to ignore
 	ignoreFiles []string
+	// An array of directories to ignore
+	ignoreDirs []string
 }
 
 // NewStats
@@ -46,13 +48,14 @@ type Stats struct {
 //
 // Returns pointer to new Stats struct
 func NewStats(repoUser string, repoName string,
-	ignoreExtensions []string, ignoreFiles []string) *Stats {
+	ignoreExtensions []string, ignoreFiles []string,
+	ignoreDirs []string) *Stats {
 	return &Stats{RepoUser: repoUser, RepoName: repoName,
 		numPRs: 0, numCommits: 0, totalLinesOfCode: 0,
 		allPRs: make([]interface{}, 0), allCommits: make([]interface{}, 0),
 		prAttribution: make(map[string]int), commitAttribution: make(map[string]int),
 		fileURLs: make(map[string]string), fileChanges: make(map[string]int), fileSizes: make(map[string]int),
-		ignoreExtensions: ignoreExtensions, ignoreFiles: ignoreFiles}
+		ignoreExtensions: ignoreExtensions, ignoreFiles: ignoreFiles, ignoreDirs: ignoreDirs}
 }
 
 // SetPRs

@@ -27,8 +27,10 @@ func main() {
 	// Make stuff
 	api := services.NewGHAPI(repoUser, repoName, envData["GITHUB_TOKEN"])
 	stats := utils.NewStats(repoUser, repoName,
-		[]string{".png", ".svg", ".jpg", ".lock", ".json", ".log", ".md"},
-		[]string{"package-lock.json", "yarn.lock"},
+		[]string{".png", ".svg", ".jpg", ".lock", ".json", ".log", ".md", ".yml", ".pdf"},
+		[]string{"package-lock.json", "yarn.lock", "package.json"},
+		[]string{".github", ".git", ".husky", "client/docs", "client/node_modules", "client/patches",
+			"server/node_modules"},
 	)
 
 	//	Get PRs

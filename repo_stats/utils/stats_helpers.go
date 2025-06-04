@@ -6,6 +6,7 @@ import (
 	"slices"
 	"sort"
 	"strconv"
+	"strings"
 )
 
 // topnMapStrInt
@@ -37,6 +38,27 @@ func topnMapStrInt(x map[string]int, n int) map[string]int {
 	return result
 }
 
+func (x *Stats) isInsideDirectory(filePath string) (bool, error) {
+	for _, dirPath := range x.ignoreDirs {
+		// Clean both paths to handle .. and . components
+		cleanFile := filepath.Clean(filePath)
+		cleanDir := filepath.Clean(dirPath)
+
+		// Get relative path from directory to file
+		rel, err := filepath.Rel(cleanDir, cleanFile)
+		if err != nil {
+			return false, err
+		}
+
+		// If the relative path starts with "..", the file is outside the directory
+		insideDir := !strings.HasPrefix(rel, "..")
+		if insideDir {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
 // filterFiles
 // Filters files based on filepath and file extension filtering rules
 //
@@ -52,6 +74,14 @@ func (x *Stats) filterFiles(fileMap map[string]int) map[string]int {
 		}
 
 		if slices.Contains(x.ignoreExtensions, filepath.Ext(file)) {
+			continue
+		}
+
+		ignoreDir, err := x.isInsideDirectory(file)
+		if err != nil {
+			continue
+		}
+		if ignoreDir {
 			continue
 		}
 
