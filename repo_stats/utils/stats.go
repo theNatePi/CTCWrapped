@@ -86,7 +86,7 @@ func (x *Stats) SetCommits(commits []interface{}) {
 	x.allCommits = commits
 	for _, commit := range commits {
 		_commit := commit.(map[string]interface{})["commit"]
-		_committer := _commit.(map[string]interface{})["committer"]
+		_committer := _commit.(map[string]interface{})["author"]
 		_name := _committer.(map[string]interface{})["name"]
 		if _name != "GitHub" {
 			attribution := _name.(string)
