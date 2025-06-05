@@ -31,6 +31,7 @@ Generate a GitHub Personal Access Token
 3. Click the "repo" scope
 4. Generate token, add it into an `.env` file
     - Match the format of `.env.example`
+**Note:** The .env file MUST be in the same folder as the compiled tool
 
 ## Generate Stats
 1. Run `./repo_stats` (or the name of your binary)
