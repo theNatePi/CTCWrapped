@@ -1,5 +1,5 @@
 ## Repo Stats Generator
-Generates stats about repositories, including:
+Generates stats about GitHub repositories, including:
 - Number of lines of code
 - Number of PRs
 - Number of commits
