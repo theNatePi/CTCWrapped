@@ -1,5 +1,5 @@
 ### CTCWrapped
-This repository contains a set of tools used by [Commit The Change](https://ctc-uci.com/) to track Slack usage and top contributors on projects
+This repository contains a set of tools used by [Commit The Change](https://ctc-uci.com/) to track Slack usage and top contributors on projects.
 
 ## repo_stats
 The repo_stats folder contains a command line tool which can be used to retreive data from the GitHub API. An example output is:
