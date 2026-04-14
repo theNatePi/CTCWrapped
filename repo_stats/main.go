@@ -49,7 +49,7 @@ func main() {
 	stats.SetCommits(commits)
 
 	// Get data from the commits
-	fileURLs, fileSizes, fileChanges, err := api.ExtractFileData(commits)
+	fileURLs, fileSizes, fileChanges, useStates, err := api.ExtractFileData(commits)
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -58,7 +58,7 @@ func main() {
 	stats.SetFileUrls(fileURLs)
 	stats.SetFileSizes(fileSizes)
 	stats.SetFileChanges(fileChanges)
-
+	stats.SetUseStates(useStates)
 	stats.OutputResults()
 
 	//fmt.Println(stats.Files())

@@ -19,6 +19,10 @@ type Stats struct {
 	// An array of all commits in teh repo, initially empty
 	allCommits       []interface{}
 	totalLinesOfCode int
+	// A map of file path to number of useState calls in the file
+	allUseStates map[string]int
+	// The number of times useState is used in the repo
+	numUseStates int
 	// A map of GitHub username to number of PRs authored
 	prAttribution map[string]int
 	// A map of GitHub username to number of commits authored
@@ -120,6 +124,15 @@ func (x *Stats) SetFileChanges(fileChanges map[string]int) {
 	x.fileChanges = filteredFiles
 }
 
+// SetUseStates
+// Sets the local allUseStates to allUseStates and set numUseStates
+func (x *Stats) SetUseStates(allUseStates map[string]int) {
+	x.allUseStates = allUseStates
+	for _, useState := range allUseStates {
+		x.numUseStates += useState
+	}
+}
+
 // TopPRs
 // Gets the top n PRs (in order)
 func (x *Stats) TopPRs(n int) map[string]int {
@@ -150,6 +163,14 @@ func (x *Stats) TopFileChanges(n int) map[string]int {
 	return result
 }
 
+// TopUseStates
+// Gets the top n files by number of useState calls (in order)
+func (x *Stats) TopUseStates(n int) map[string]int {
+	result := x.filterFiles(x.allUseStates)
+	result = topnMapStrInt(result, n)
+	return result
+}
+
 // TotalLinesOfCode
 // Gets total lines of code
 func (x *Stats) TotalLinesOfCode() int {
@@ -171,6 +192,8 @@ func (x *Stats) OutputResults() {
 		[]Color{TitleNoBold, Subtle})
 	OutputFrom([]string{"Total PRs:", strconv.Itoa(x.numPRs)},
 		[]Color{TitleNoBold, Subtle})
+	OutputFrom([]string{"Total useState calls:", strconv.Itoa(x.numUseStates)},
+		[]Color{TitleNoBold, Subtle})
 	fmt.Println()
 
 	Output("Top PRs:", TitleNoBold)
@@ -181,6 +204,8 @@ func (x *Stats) OutputResults() {
 	printTop(x.TopFileSizes(5))
 	Output("Top File Changes:", TitleNoBold)
 	printTop(x.TopFileChanges(5))
+	Output("Top Use States:", TitleNoBold)
+	printTop(x.TopUseStates(5))
 }
 
 func (x *Stats) Files() map[string]int {

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"repo_stats/utils"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -162,15 +163,13 @@ func (x *GHAPI) getCommitData(commit interface{}) (interface{}, error) {
 	return parsedBody, nil
 }
 
-func (x *GHAPI) getFileSize(fileURL string) (int, error) {
+func (x *GHAPI) downloadFileContent(fileURL string) (string, error) {
 	x.RequestCategory = "File"
 	file, _, err := x.makeRequest(fileURL, "")
 	if err != nil {
-		return -1, err
+		return "", err
 	}
-
-	lineCount := numLines(file)
-	return lineCount, nil
+	return file, nil
 }
 
 func (x *GHAPI) GetAllFilesFromMainBranch() ([]string, error) {
@@ -217,15 +216,16 @@ func (x *GHAPI) GetAllFilesFromMainBranch() ([]string, error) {
 	return fileNames, nil
 }
 
-func (x *GHAPI) ExtractFileData(commits []interface{}) (map[string]string, map[string]int, map[string]int, error) {
+func (x *GHAPI) ExtractFileData(commits []interface{}) (map[string]string, map[string]int, map[string]int, map[string]int, error) {
 	fileURLMap := make(map[string]string)
 	fileSizeMap := make(map[string]int)
+	numUseStateMap := make(map[string]int)
 	fileChangesMap := make(map[string]int)
 
 	for _, commit := range commits {
 		commitData, err := x.getCommitData(commit)
 		if err != nil {
-			return nil, nil, nil, err
+			return nil, nil, nil, nil, err
 		}
 		_files := commitData.(map[string]interface{})["files"].([]interface{})
 
@@ -238,7 +238,7 @@ func (x *GHAPI) ExtractFileData(commits []interface{}) (map[string]string, map[s
 
 	fileNames, err := x.GetAllFilesFromMainBranch()
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 
 	for _, fileName := range fileNames {
@@ -248,12 +248,14 @@ func (x *GHAPI) ExtractFileData(commits []interface{}) (map[string]string, map[s
 	}
 
 	for file, url := range fileURLMap {
-		fileSize, err := x.getFileSize(url)
+		fileContents, err := x.downloadFileContent(url)
 		if err != nil {
-			return nil, nil, nil, err
+			return nil, nil, nil, nil, err
 		}
-		fileSizeMap[file] = fileSize
+		fileSizeMap[file] = numLines(fileContents)
+		// Subtract 1 to remove the import statement
+		numUseStateMap[file] = strings.Count(fileContents, "useState") - 1
 	}
 
-	return fileURLMap, fileSizeMap, fileChangesMap, nil
+	return fileURLMap, fileSizeMap, fileChangesMap, numUseStateMap, nil
 }
