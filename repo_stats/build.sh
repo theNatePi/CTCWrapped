@@ -7,6 +7,7 @@ if [[ -z "$package" ]]; then
 fi
 package_split=(${package//\// })
 package_name=${package_split[$((${#package_split[@]}-1))]}
+mkdir -p ./dist
 
 platforms=(
   "darwin/amd64"
@@ -27,13 +28,20 @@ do
   GOOS=${platform_split[0]}
   GOARCH=${platform_split[1]}
   output_name='./dist/'$package_name'-'$GOOS'-'$GOARCH
-  if [ $GOOS = "windows" ]; then
+  if [ "$GOOS" = "windows" ]; then
     output_name+='.exe'
   fi
 
-  env GOOS=$GOOS GOARCH=$GOARCH go build -o $output_name $package
+  env GOOS=$GOOS GOARCH=$GOARCH go build -o "$output_name" "$package"
   if [ $? -ne 0 ]; then
     echo 'An error has occurred! Aborting the script execution...'
     exit 1
+  fi
+
+  # Ensure downloadable artifacts have the expected permissions.
+  if [ "$GOOS" = "windows" ]; then
+    chmod 644 "$output_name"
+  else
+    chmod 755 "$output_name"
   fi
 done

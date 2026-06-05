@@ -3,6 +3,7 @@ package services
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"net/http"
 	"repo_stats/utils"
 	"strconv"
@@ -254,7 +255,7 @@ func (x *GHAPI) ExtractFileData(commits []interface{}) (map[string]string, map[s
 		}
 		fileSizeMap[file] = numLines(fileContents)
 		// Subtract 1 to remove the import statement
-		numUseStateMap[file] = strings.Count(fileContents, "useState") - 1
+		numUseStateMap[file] = int(math.Max(0, float64(strings.Count(fileContents, "useState")-1)))
 	}
 
 	return fileURLMap, fileSizeMap, fileChangesMap, numUseStateMap, nil
