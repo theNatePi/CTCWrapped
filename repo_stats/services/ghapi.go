@@ -255,6 +255,7 @@ func (x *GHAPI) ExtractFileData(commits []interface{}) (map[string]string, map[s
 		}
 		fileSizeMap[file] = numLines(fileContents)
 		// Subtract 1 to remove the import statement
+		// Files with no useState will return -1, so max at 0
 		numUseStateMap[file] = int(math.Max(0, float64(strings.Count(fileContents, "useState")-1)))
 	}
 
